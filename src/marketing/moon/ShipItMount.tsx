@@ -12,6 +12,9 @@
  * two stay in sync.
  */
 
+import dynamic from 'next/dynamic';
+import { useEffect, useState } from 'react';
+
 /* The brand palette the site passes into the game so it harmonizes. */
 export type MoonPalette = {
   black: string;
@@ -251,14 +254,35 @@ export function ShipItComingCard() {
   );
 }
 
-/* ── The mount. Currently the temp card.
- *
- * To flip the real game in (it is built + verified at src/game/ship-it/):
- *   'use client' + import { useEffect, useState } from 'react' + dynamic from 'next/dynamic'
- *   const ShipItGame = dynamic(() => import('@/src/game/ship-it'), { ssr: false, loading: () => <ShipItComingCard /> });
- *   ...detect prefers-reduced-motion (rm), track won, then:
- *   <ShipItGame palette={MOON_PALETTE} prefersReducedMotion={rm} onWon={() => setWon(true)} />
- * ─────────────────────────────────────────────────────────────────────────── */
+/* ── The mount: loads the real game, the temp card as the loading fallback. ─ */
+const ShipItGame = dynamic(() => import('@/src/game/ship-it'), {
+  ssr: false,
+  loading: () => <ShipItComingCard />,
+});
+
 export default function ShipItMount() {
-  return <ShipItComingCard />;
+  const [rm, setRm] = useState(
+    () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  );
+  const [won, setWon] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const onChange = () => setRm(mq.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  return (
+    <div className="ma-mount-live">
+      <ShipItGame palette={MOON_PALETTE} prefersReducedMotion={rm} onWon={() => setWon(true)} />
+      {won && (
+        <p className="ma-mount-note" role="status">
+          You shipped the toolkit.
+          <span className="ma-dim">Internal tools with AI baked in. That is the job. Let&apos;s talk.</span>
+        </p>
+      )}
+    </div>
+  );
 }

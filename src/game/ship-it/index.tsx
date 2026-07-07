@@ -1,72 +1,117 @@
 'use client';
 
 /**
- * ShipItGame — the self-contained "Ship It!" Phaser mini-game, delivered to the
- * embed contract in jobs/moon-active/game-agent-convention.md. Built here from
- * the gamestudio (gem-vault) Phaser-4 donor. Client-only; loaded by
- * ShipItMount via next/dynamic({ ssr: false }).
+ * index.tsx — the React embed shim (game-agent-convention.md entry shape). This is the ONE file
+ * the site imports: a client-only component that mounts the Phaser game and surfaces exactly
+ * `onReady` / `onWon`. It owns the game lifecycle (create on mount, destroy on unmount) so it is
+ * React-StrictMode safe, and passes the site's brand palette + reduced-motion in via props.
+ *
+ * Loaded by the site with next/dynamic(() => import('@/src/game/ship-it'), { ssr: false }).
+ * Self-contained: Phaser + all art (base64) travel with this folder; no network calls at runtime.
  */
-import { useEffect, useRef } from 'react';
-import type Phaser from 'phaser';
-import type { MoonPalette } from '@/src/marketing/moon/ShipItMount';
-import { GAME_W, GAME_H } from './config';
 
-export type ShipItGameProps = {
+import { useEffect, useRef, useState } from 'react';
+import { createShipItGame } from './createShipItGame';
+import { EVENTS, WonPayload, makeBus } from './core/bus';
+import type { MoonPalette } from './core/palette';
+
+export type { MoonPalette };
+
+export interface ShipItGameProps {
   palette: MoonPalette;
-  prefersReducedMotion: boolean;
+  prefersReducedMotion?: boolean;
   onReady?: () => void;
   onWon?: (payload: { modulesShipped: string[] }) => void;
-};
+}
 
-export default function ShipItGame({ palette, prefersReducedMotion, onReady, onWon }: ShipItGameProps) {
-  const hostRef = useRef<HTMLDivElement>(null);
-  const gameRef = useRef<Phaser.Game | null>(null);
+export default function ShipItGame({
+  palette,
+  prefersReducedMotion,
+  onReady,
+  onWon,
+}: ShipItGameProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
-    let disposed = false;
+    const parent = ref.current;
+    if (!parent) return;
 
-    (async () => {
-      // Phaser touches window/document at import, so load it only on the client.
-      const PhaserMod = (await import('phaser')).default;
-      const { ShipItScene } = await import('./ShipItScene');
-      // Wait for the page font so canvas text isn't a FOUT fallback.
-      try { await (document as Document & { fonts?: FontFaceSet }).fonts?.ready; } catch { /* no-op */ }
-      if (disposed || !hostRef.current) return;
+    const bus = makeBus();
+    if (onReady) bus.on(EVENTS.READY, onReady);
+    if (onWon) bus.on(EVENTS.WON, (p: WonPayload) => onWon(p));
 
-      const scene = new ShipItScene({ palette, prefersReducedMotion, onReady, onWon });
-      gameRef.current = new PhaserMod.Game({
-        type: PhaserMod.AUTO,
-        parent: hostRef.current,
-        backgroundColor: palette.navy,
-        transparent: false,
-        scale: {
-          mode: PhaserMod.Scale.FIT,
-          autoCenter: PhaserMod.Scale.CENTER_BOTH,
-          width: GAME_W,
-          height: GAME_H,
-        },
-        render: { antialias: true, roundPixels: false },
-        scene: [scene],
-      });
-    })();
+    let game: ReturnType<typeof createShipItGame> | null = null;
+    let cancelled = false;
+
+    // Defer creation by a tick so a React double-mount (StrictMode in dev, and
+    // the dynamic-import/Suspense remount seen in prod) collapses to ONE game:
+    // the first mount schedules, the immediate unmount cancels it, the surviving
+    // mount schedules again. Destroying a Phaser game mid-Boot otherwise races
+    // its async loader and can leave the survivor stuck on the Boot scene.
+    const raf = requestAnimationFrame(() => {
+      if (cancelled || !parent) return;
+      try {
+        game = createShipItGame({
+          parent,
+          palette,
+          prefersReducedMotion: !!prefersReducedMotion,
+          emitter: bus,
+        });
+      } catch {
+        setFailed(true);
+      }
+    });
 
     return () => {
-      disposed = true;
-      gameRef.current?.destroy(true);
-      gameRef.current = null;
+      cancelled = true;
+      cancelAnimationFrame(raf);
+      bus.removeAllListeners();
+      game?.destroy(true);
     };
-    // Mount once; palette/callbacks are stable for the component's life.
+    // Mount once: palette + reduced-motion are stable for the page's lifetime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  if (failed) {
+    return (
+      <div
+        role="img"
+        aria-label="Ship It! mini-game (needs WebGL). The proof points it reveals are listed on this page."
+        style={fallbackStyle(palette)}
+      >
+        Your browser could not start the game. Everything it shows is written out on this page.
+      </div>
+    );
+  }
+
   return (
     <div
-      ref={hostRef}
-      className="ship-it-host"
+      ref={ref}
       role="application"
-      aria-label="Ship It! mini-game. Press Space or tap Ship It to spin. Every proof point it reveals is also listed in plain text next to it."
-      tabIndex={0}
-      style={{ width: '100%', aspectRatio: `${GAME_W} / ${GAME_H}`, maxWidth: 460, margin: '0 auto', borderRadius: 18, overflow: 'hidden' }}
+      aria-label="Ship It! — spin the reel to build the internal AI tools; each shipped module reveals a real proof point."
+      style={{
+        width: '100%',
+        maxWidth: 430,
+        aspectRatio: '390 / 844',
+        margin: '0 auto',
+        borderRadius: 18,
+        overflow: 'hidden',
+      }}
     />
   );
+}
+
+function fallbackStyle(p: MoonPalette): React.CSSProperties {
+  return {
+    width: '100%',
+    maxWidth: 430,
+    margin: '0 auto',
+    padding: '32px 24px',
+    borderRadius: 18,
+    background: p.navyDeep,
+    color: p.white,
+    font: '15px/1.5 Poppins, system-ui, sans-serif',
+    textAlign: 'center',
+  };
 }

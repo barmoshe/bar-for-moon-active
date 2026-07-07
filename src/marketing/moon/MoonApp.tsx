@@ -487,11 +487,10 @@ export default function MoonApp() {
               <span className="ma-eyebrow">The build</span>
               <h2 id="ma-build-h">Spin to assemble the toolkit</h2>
               <p className="ma-build-lead">
-                Ship It! is a Coin Master-style spin-slot I&apos;m building for
-                this application: spin to assemble the internal AI tools this
-                role is about. The playable build is landing here shortly. Every
-                module it ships reveals a real proof point, so here they are
-                already, in plain text.
+                Ship It! is a Coin Master-style spin-slot I built for this
+                application: spin to assemble the internal AI tools this role is
+                about. Every module you ship reveals a real proof point, so here
+                they are in plain text too, no game required.
               </p>
               <div className="ma-proof-list">
                 {PROOFS.map((p) => (

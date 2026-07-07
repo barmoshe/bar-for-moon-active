@@ -590,12 +590,16 @@
   position: relative;
 }
 /* the live game wrapper */
-.ma-game {
+.ma-game,
+.ma-mount-live {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
+}
+.ma-mount-live .ma-mount-note {
+  margin: 0;
 }
 .ma-game-cta {
   align-self: center;
