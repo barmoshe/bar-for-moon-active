@@ -103,6 +103,10 @@ export class GameScene extends Phaser.Scene {
       this.button.press();
     });
 
+    // Tap anywhere on the board spins too (robust against precise button hit
+    // areas; spin() guards on `busy` so this never double-fires with the button).
+    this.input.on('pointerdown', () => this.spin());
+
     this.refreshRings();
     this.bench.highlightActive(0);
     this.updateShieldHud();

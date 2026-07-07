@@ -51,9 +51,16 @@ export class Button extends Phaser.GameObjects.Container {
     this.add([this.focusRing, this.bg, this.label]);
     scene.add.existing(this);
 
-    this.setSize(this.bw, this.bh);
+    // Generous hit area: pad the collider well beyond the visual bounds so the
+    // button is easy to hit with a mouse and comfortable on touch (>=44px target).
+    // The old collider was exactly the pill (e.g. 220x58), which felt too small.
+    const padX = 32;
+    const padY = Math.max(24, (56 - this.bh) / 2 + 24);
+    const hitW = this.bw + padX * 2;
+    const hitH = this.bh + padY * 2;
+    this.setSize(hitW, hitH);
     this.setInteractive(
-      new Phaser.Geom.Rectangle(-this.bw / 2, -this.bh / 2, this.bw, this.bh),
+      new Phaser.Geom.Rectangle(-hitW / 2, -hitH / 2, hitW, hitH),
       Phaser.Geom.Rectangle.Contains,
     );
     this.on('pointerover', () => this.scene && this.setScale(1.03));

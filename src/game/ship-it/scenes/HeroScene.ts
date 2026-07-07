@@ -16,9 +16,16 @@ import { DISPLAY_FONT, BODY_FONT } from '../ui/fonts';
 
 export class HeroScene extends Phaser.Scene {
   private gc!: GameContext;
+  private entering = false;
 
   constructor() {
     super('Hero');
+  }
+
+  private toGame(): void {
+    if (this.entering) return; // guard: starting twice would restart Game
+    this.entering = true;
+    this.scene.start('Game');
   }
 
   create(): void {
@@ -72,7 +79,7 @@ export class HeroScene extends Phaser.Scene {
       fill: gc.c.gold,
       textColor: gc.css.navyDeep,
       fontSize: 22,
-      onClick: () => this.scene.start('Game'),
+      onClick: () => this.toGame(),
     });
     play.setFocused(true, gc.c.gold);
     play.setAlpha(0);
@@ -87,8 +94,9 @@ export class HeroScene extends Phaser.Scene {
     // Space / tap anywhere skips straight into the build
     this.input.keyboard?.on('keydown-SPACE', (e: KeyboardEvent) => {
       e.preventDefault();
-      this.scene.start('Game');
+      this.toGame();
     });
+    this.input.on('pointerdown', () => this.toGame());
 
     if (gc.reducedMotion) {
       reel.setLineInstant(HERO_LINE);

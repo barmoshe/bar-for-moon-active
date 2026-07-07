@@ -65,6 +65,10 @@ export default function ShipItGame({
           prefersReducedMotion: !!prefersReducedMotion,
           emitter: bus,
         });
+        // Dev-only handle for verification; stripped from production builds.
+        if (process.env.NODE_ENV !== 'production' && typeof window !== 'undefined') {
+          (window as unknown as { __shipGame?: unknown }).__shipGame = game;
+        }
       } catch {
         setFailed(true);
       }
