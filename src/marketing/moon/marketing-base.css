@@ -1,0 +1,151 @@
+/* =============================================================
+   marketing-base.css — the `.mp-root` reset/token/typography base
+   ported verbatim from the bar_builds site (src/marketing/marketing.css,
+   the `.mp-root` block). JeenApp mounts `.mp-root ja-root`; jeen-ai.css
+   overrides everything via `.ja-root` / `.ja-root.mp-root`. This file just
+   supplies the box-sizing reset, focus base, skip-link, and the token
+   defaults those compound selectors build on. Light-mode palette/fonts here
+   are never visible — jeen-ai.css repaints the whole surface dark.
+   ============================================================= */
+
+.mp-root {
+  /* color - refined palette: softer paper, cooler ink, jewel-tone accents.
+     Same semantic roles as before (magenta=TODO, amber=DOING, teal=DONE)
+     but tuned for cohesion and AA contrast across all surface pairings. */
+  --mp-bg:          oklch(0.965 0.018 85);   /* off-white paper, hint of warmth */
+  --mp-bg-2:        oklch(0.945 0.022 85);   /* tinted card for the DOING beat */
+  --mp-surface:     oklch(0.995 0.005 85);   /* cleanest white for card faces */
+  --mp-ink:         oklch(0.20 0.03 265);    /* deep blue-graphite - cooler */
+  --mp-ink-soft:    oklch(0.42 0.04 265);    /* secondary text */
+
+  --mp-primary:     oklch(0.52 0.20 350);    /* raspberry-magenta - TODO */
+  --mp-primary-ink: oklch(0.99 0.015 350);
+  --mp-accent-2:    oklch(0.74 0.15 55);     /* warm amber - DOING */
+  --mp-accent-2-ink:oklch(0.20 0.03 265);
+  --mp-accent-3:    oklch(0.48 0.13 215);    /* deep teal-cobalt - DONE */
+  --mp-accent-3-ink:oklch(0.99 0.015 215);
+
+  --mp-whatsapp:    oklch(0.48 0.15 150);    /* slightly deeper, more refined */
+  --mp-whatsapp-ink:oklch(0.99 0.02 150);
+
+  /* sticker shadow */
+  --mp-shadow:      6px 6px 0 var(--mp-ink);
+  --mp-shadow-pop:  8px 8px 0 var(--mp-primary);
+  --mp-shadow-sm:   3px 3px 0 var(--mp-ink);
+
+  /* shape */
+  --mp-radius:      18px;
+  --mp-radius-sm:   10px;
+  --mp-radius-lg:   28px;
+
+  /* type */
+  --mp-font-body:    var(--font-frank), 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+  --mp-font-display: var(--font-frank), 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+  --mp-font-hero:    var(--font-frank), 'Frank Ruhl Libre', Georgia, 'Times New Roman', serif;
+
+  background: var(--mp-bg);
+  color: var(--mp-ink);
+  font-family: var(--mp-font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  min-block-size: 100svh;
+  -webkit-text-size-adjust: 100%;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .mp-root {
+  /* Cool blue-graphite night, hue 265, the inverse of the light-mode ink
+     (also hue 265), not the old warm hue-50 brown. Low chroma keeps the
+     surfaces near-neutral; the jewel-tone accents (magenta/amber/teal) carry
+     the colour. */
+  --mp-bg:          oklch(0.145 0.014 265);
+  --mp-bg-2:        oklch(0.185 0.016 265);
+  --mp-surface:     oklch(0.235 0.018 265);
+  --mp-ink:         oklch(0.96 0.010 250);
+  --mp-ink-soft:    oklch(0.78 0.014 255);
+  /* DOING amber re-tuned for dark: a luminous gold (lighter, hue 85) instead
+     of the light-mode amber, which read muddy-brown on charcoal and widened
+     the page's apparent colour range. */
+  --mp-accent-2:    oklch(0.82 0.14 85);
+  --mp-shadow:      6px 6px 0 oklch(0 0 0 / .55);
+  --mp-shadow-pop:  8px 8px 0 var(--mp-primary);
+  --mp-shadow-sm:   3px 3px 0 oklch(0 0 0 / .55);
+}
+
+@media (max-width: 640px) {
+  .mp-root {
+    --mp-shadow:     4px 4px 0 var(--mp-ink);
+    --mp-shadow-pop: 6px 6px 0 var(--mp-primary);
+    --mp-shadow-sm:  2px 2px 0 var(--mp-ink);
+  }
+}
+
+/* ---------------------------------------------------------------
+   2. Reset / global
+   --------------------------------------------------------------- */
+
+.mp-root * { box-sizing: border-box; }
+
+/* Link colors are owned by autofleet.css (each `.af-*` component sets its own);
+   the old .mp-root accent rules fought every button and tile color. */
+.mp-root a {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.mp-root :where(button, a, summary, [role="button"], input, textarea, select):focus-visible {
+  outline: 3px solid var(--mp-primary);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+.mp-root main:focus { outline: none; }
+
+.mp-root .visually-hidden {
+  position: absolute;
+  inline-size: 1px; block-size: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.mp-root .skip-link {
+  position: absolute;
+  inset-block-start: -48px;
+  inset-inline-start: 12px;
+  background: var(--mp-ink);
+  color: var(--mp-bg);
+  padding: 10px 16px;
+  text-decoration: none;
+  border-radius: var(--mp-radius-sm);
+  font-weight: 700;
+  z-index: 100;
+}
+.mp-root .skip-link:focus-visible { inset-block-start: 12px; }
+
+/* ---------------------------------------------------------------
+   3. Typography
+   --------------------------------------------------------------- */
+
+.mp-root :where(h1, h2, h3, h4) {
+  font-family: var(--mp-font-display);
+  /* Headings sit at 700, bold, but a clear step below the 900 hero, so the
+     single serif family still reads as a hierarchy. */
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin: 0;
+}
+.mp-root h1 {
+  font-family: var(--mp-font-hero);
+  /* The hero is the only 900 (black) on the page; Frank Ruhl Libre at 400
+     would read thin at this size, so the top of the ladder carries it. */
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  font-size: clamp(2.2rem, 8vw, 4.4rem);
+}
+.mp-root h2 { font-size: clamp(1.8rem, 5.5vw, 2.8rem); }
+.mp-root h3 { font-size: clamp(1.2rem, 3.5vw, 1.6rem); }
+
