@@ -44,16 +44,23 @@ export default function ShipItGame({
     let game: ReturnType<typeof createShipItGame> | null = null;
     let cancelled = false;
 
-    // Defer creation by a tick so a React double-mount (StrictMode in dev, and
-    // the dynamic-import/Suspense remount seen in prod) collapses to ONE game:
-    // the first mount schedules, the immediate unmount cancels it, the surviving
-    // mount schedules again. Destroying a Phaser game mid-Boot otherwise races
-    // its async loader and can leave the survivor stuck on the Boot scene.
-    const raf = requestAnimationFrame(() => {
-      if (cancelled || !parent) return;
+    // Defer creation one macrotask so a transient double-mount (React StrictMode
+    // in dev, and the dynamic-import remount) collapses to a SINGLE game: the
+    // aborted mount clears its timer before it fires, so only the surviving mount
+    // builds a game. Two Phaser games in one parent otherwise stack their
+    // canvases and one ends up frozen (its RAF loop never steps) -> the visible
+    // canvas is dead and unclickable. setTimeout (not requestAnimationFrame) so
+    // it still fires in a hidden/background tab, where rAF is throttled to ~0.
+    const timer = window.setTimeout(() => {
+      if (cancelled) return;
+      const el = ref.current;
+      // Exactly one game per page: if a canvas already exists in this host (a
+      // concurrent or leftover mount built one), do NOT create a second - two
+      // Phaser games stack canvases and one freezes, killing input.
+      if (!el || el.querySelector('canvas')) return;
       try {
         game = createShipItGame({
-          parent,
+          parent: el,
           palette,
           prefersReducedMotion: !!prefersReducedMotion,
           emitter: bus,
@@ -61,13 +68,15 @@ export default function ShipItGame({
       } catch {
         setFailed(true);
       }
-    });
+    }, 0);
 
     return () => {
       cancelled = true;
-      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
       bus.removeAllListeners();
+      const canvas = game?.canvas;
       game?.destroy(true);
+      canvas?.remove();
     };
     // Mount once: palette + reduced-motion are stable for the page's lifetime.
     // eslint-disable-next-line react-hooks/exhaustive-deps
