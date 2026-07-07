@@ -4,16 +4,12 @@
  * ShipItMount — the ONE boundary where the "Ship It!" mini-game meets the
  * site. See jobs/moon-active/game-agent-convention.md for the full contract.
  *
- * Today this renders `ShipItPlaceholder` (a static, branded slot + workbench
- * frame). When the game agent delivers the game to `src/game/ship-it/`, this
- * file is the ONLY site change: swap the placeholder for
+ * STATUS: the real Phaser game IS built and functional (src/game/ship-it/),
+ * but it is held behind a temp "coming soon" card until it is fully signed off.
+ * To flip it in, restore the dynamic mount shown at the bottom of this file.
  *
- *   const ShipItGame = dynamic(() => import('@/src/game/ship-it'), { ssr: false });
- *   return <ShipItGame palette={MOON_PALETTE} prefersReducedMotion={rm}
- *                       onReady={onReady} onWon={onWon} />;
- *
- * The `MoonPalette` type below is canonical; the game entry re-declares it
- * identically (or imports it) so the two stay in sync.
+ * The `MoonPalette` type below is canonical; the game entry imports it so the
+ * two stay in sync.
  */
 
 /* The brand palette the site passes into the game so it harmonizes. */
@@ -220,7 +216,49 @@ export function ShipItTeaser() {
   );
 }
 
-/* ── The mount: the swap point. Today, the placeholder. ─────────────────── */
+/* ── A gold slot-machine emblem for the temp card. ──────────────────────── */
+function SlotEmblem() {
+  const s = { fill: 'none', stroke: 'currentColor', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+  return (
+    <svg viewBox="0 0 96 96" aria-hidden="true">
+      <rect x="14" y="26" width="60" height="52" rx="8" {...s} />
+      <rect x="24" y="38" width="12" height="28" rx="3" {...s} />
+      <rect x="42" y="38" width="12" height="28" rx="3" {...s} />
+      <rect x="60" y="38" width="4" height="28" rx="2" {...s} />
+      <path d="M74 40h8v18a8 8 0 0 1-16 0" {...s} />
+      <circle cx="82" cy="34" r="6" {...s} />
+      <path d="M30 26V16h24v10" {...s} />
+    </svg>
+  );
+}
+
+/* ── The temp "coming soon" card. Stands in for the game until sign-off. ─── */
+export function ShipItComingCard() {
+  return (
+    <div className="ma-coming">
+      <span className="ma-slot-badge">Ship It!</span>
+      <span className="ma-coming-art">
+        <SlotEmblem />
+      </span>
+      <h3 className="ma-coming-title">The playable build is on the way</h3>
+      <p className="ma-coming-sub">
+        A Coin Master-style spin-slot you play to assemble the internal AI
+        tools this role builds. It is in the studio now; the proof points it
+        reveals are already listed right here.
+      </p>
+      <span className="ma-coming-pill">Coming soon</span>
+    </div>
+  );
+}
+
+/* ── The mount. Currently the temp card.
+ *
+ * To flip the real game in (it is built + verified at src/game/ship-it/):
+ *   'use client' + import { useEffect, useState } from 'react' + dynamic from 'next/dynamic'
+ *   const ShipItGame = dynamic(() => import('@/src/game/ship-it'), { ssr: false, loading: () => <ShipItComingCard /> });
+ *   ...detect prefers-reduced-motion (rm), track won, then:
+ *   <ShipItGame palette={MOON_PALETTE} prefersReducedMotion={rm} onWon={() => setWon(true)} />
+ * ─────────────────────────────────────────────────────────────────────────── */
 export default function ShipItMount() {
-  return <ShipItPlaceholder />;
+  return <ShipItComingCard />;
 }

@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import './marketing-base.css';
 import './moon.css';
-import { ShipItTeaser, ShipItPlaceholder } from './ShipItMount';
+import ShipItMount, { ShipItTeaser } from './ShipItMount';
 
 /**
  * MoonApp — Bar Moshe's application page for Moon Active's Full Stack
@@ -481,17 +481,17 @@ export default function MoonApp() {
         <section className="ma-build" id="ma-build" aria-labelledby="ma-build-h">
           <div className="ma-build-grid">
             <div className="ma-build-stage" data-reveal>
-              <ShipItPlaceholder />
+              <ShipItMount />
             </div>
             <div className="ma-build-proof" data-reveal>
               <span className="ma-eyebrow">The build</span>
               <h2 id="ma-build-h">Spin to assemble the toolkit</h2>
               <p className="ma-build-lead">
-                Ship It! is a Coin Master-style spin-slot I built for this
-                application. You spin to gather resources and assemble the
-                internal AI tools this role is about. Every module you ship
-                reveals a real proof point, so here they are in plain text too,
-                no game required.
+                Ship It! is a Coin Master-style spin-slot I&apos;m building for
+                this application: spin to assemble the internal AI tools this
+                role is about. The playable build is landing here shortly. Every
+                module it ships reveals a real proof point, so here they are
+                already, in plain text.
               </p>
               <div className="ma-proof-list">
                 {PROOFS.map((p) => (

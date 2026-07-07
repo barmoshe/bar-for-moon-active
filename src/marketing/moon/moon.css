@@ -589,6 +589,83 @@
 .ma-build-stage {
   position: relative;
 }
+/* the live game wrapper */
+.ma-game {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+.ma-game-cta {
+  align-self: center;
+}
+.ship-it-host {
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  touch-action: manipulation;
+}
+.ship-it-host canvas {
+  display: block;
+}
+
+/* the temp "coming soon" card (stands in for the game until sign-off) */
+.ma-coming {
+  position: relative;
+  background: linear-gradient(160deg, #0c2f6b 0%, var(--ma-navy) 55%, var(--ma-navy-deep) 100%);
+  border: 3px solid rgba(255, 173, 0, 0.42);
+  border-radius: 24px;
+  padding: 44px 30px 36px;
+  min-height: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 16px;
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.ma-coming .ma-slot-badge {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+.ma-coming-art {
+  width: 92px;
+  height: 92px;
+  color: var(--ma-gold);
+  filter: drop-shadow(0 6px 14px rgba(255, 173, 0, 0.25));
+}
+.ma-coming-art svg {
+  width: 100%;
+  height: 100%;
+}
+.ma-coming-title {
+  color: var(--ma-white);
+  font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+  max-width: 16ch;
+}
+.ma-coming-sub {
+  color: var(--ma-on-dark);
+  font-size: 0.98rem;
+  text-transform: none;
+  max-width: 40ch;
+}
+.ma-coming-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ma-navy-deep);
+  background: var(--ma-gold);
+  padding: 8px 18px;
+  border-radius: 999px;
+}
+
 /* the placeholder mount frame */
 .ma-mount {
   position: relative;
