@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 
 // Root layout. The page-level metadata (rich OG card, fonts, copy) lives in
@@ -14,7 +15,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+    <Script
+      src="https://bar-for-companies.vercel.app/track.js"
+      data-bar-for-id="moon-active"
+      strategy="afterInteractive"
+    />
+{children}</body>
     </html>
   );
 }
